@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import React from 'react';
 import axios from 'axios';
-
+import Photo from './components/Photo';
 
 class App extends React.Component {
 
@@ -11,7 +11,8 @@ class App extends React.Component {
     super(props);
     this.state={
       cityData: {},
-      searchQuery: ''
+      searchQuery: '',
+      photoData: []
     }
   }
   getCity= async () =>{
@@ -33,7 +34,23 @@ class App extends React.Component {
 
 getPhotos=async (e) => {
   e.preventDefault();
-  console.log('inside the getPhotyos function')
+
+  await this.setState({
+    searchQuery: e.target.sQuery.value
+  })
+  console.log('inside the getPhotyos function');
+
+  try{
+//localhost:3001/getPhotos?searchQuery=book
+let photoRes = await axios.get(`${process.env.REACT_APP_SERVER}/getPhotos?searchQuery=${this.state.searchQuery}`)
+this.setState({
+  photoData:photoRes.data
+})
+console.log(this.state.photoData);
+  }
+  catch(error){
+    console.log('error in sending axios request',error)
+  }
 }
 
 
@@ -45,7 +62,7 @@ getPhotos=async (e) => {
         <Form onSubmit={this.getPhotos}>
           <Form.Group controlId="searchQuery">
             <Form.Label>Find Photos about ....</Form.Label>
-         <Form.Control type="text"  placeholder="Enter a search term" name='searchQuery'  />
+         <Form.Control type="text"  placeholder="Enter a search term" name='sQuery'  />
           </Form.Group>
           <Button variant="primary"  type="submit">Submit</Button>
         </Form>
@@ -55,6 +72,11 @@ getPhotos=async (e) => {
         <p>{this.state.cityData.city_name}</p>
         <p>{this.state.cityData.timezone}</p>
 
+      {this.state.photoData.length &&
+      <Photo
+      photo = {this.state.photoData}
+      />
+      }
       </div>
     )
   }
